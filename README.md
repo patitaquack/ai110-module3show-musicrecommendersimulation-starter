@@ -22,12 +22,31 @@ Explain your design in plain language.
 Some prompts to answer:
 
 - What features does each `Song` use in your system
-  - For example: genre, mood, energy, tempo
-- What information does your `UserProfile` store
-- How does your `Recommender` compute a score for each song
-- How do you choose which songs to recommend
+- For example: genre, mood, energy, tempo
 
-You can include a simple diagram or bullet list if helpful.
+Every song has descriptive labels like "genre" and " mood". It also has numeric measurements from 0 -1. This will measure energy, valence (positive or negative emotion), acousticness, and tempo_bpm.
+
+
+- What information does your `UserProfile` store:
+
+The user profile captues what a listener is looking for. Such as favorite genre, mood, energy, and preferred sounds like acoustic or non acoustic.
+
+- How does your `Recommender` compute a score for each song
+
+The recommender uses a weighted scoring formula. It checks each song and how close the song is to the user's preferences across every feature and combines it into a final score.
+
+- How do you choose which songs to recommend: 
+It first scores every song independently using weighted formula. It then sorts all the songs from highest to lowest score. Finally, it will retun the top k. The default is 5.
+
+Song 1 ──► score() ──► 0.90 ──┐
+Song 2 ──► score() ──► 0.52   │
+Song 3 ──► score() ──► 0.85   ├──► sort descending ──► top k songs returned
+Song 4 ──► score() ──► 0.61   │
+Song 5 ──► score() ──► 0.58 ──┘
+
+
+With my algorithm recipe, the system might "over-reward" songs that match on mood and energy since both capture emotion and are weighted equally at 3. A sond could score top 3 by being the right mood even if the key ot acousticness feel wrong.
+
 
 ---
 
@@ -132,60 +151,45 @@ Example:
 
 ## 3. How It Works (Short Explanation)
 
-Describe your scoring logic in plain language.
-
-- What features of each song does it consider
-- What information about the user does it use
-- How does it turn those into a number
-
-Try to avoid code in this section, treat it like an explanation to a non programmer.
-
----
+The system looks at several features of each song, such as energy, mood, tempo, genre, whether it has vocals, and whether it sounds acoustic or electronic. The user then enters their preferences, like wanting a happy, fast, high-energy song. The program compares each song to those preferences and gives more points when the song is closer to what the user wants. Some features, like energy and mood, matter more than others, so they have a bigger effect on the score. After adding everything together, each song gets a final score from 0 to 1, and the top five songs are recommended.
 
 ## 4. Data
 
-Describe your dataset.
 
-- How many songs are in `data/songs.csv`
-- Did you add or remove any songs
-- What kinds of genres or moods are represented
-- Whose taste does this data mostly reflect
+18 songs total — 10 from the original starter file, 8 added during development to expand genre and mood coverage.
+
+Genres respresented: lofi, pop, rock, ambient, synthwave, jazz, indie pop, hip-hop, classical, r&b, country, metal, reggae, blues, edm — 15 genres in total.Most have exactly one song each. Only lofi (3 songs) and pop (2 songs) have more than one representative.
+
+moods repesrented: chill, happy, intense, relaxed, moody, focused, confident, peaceful, romantic, nostalgic, angry, uplifting, melancholic, euphoric — 14 moods in total. Only chill (3 songs), happy (2 songs), and intense (2 songs) appear more than once.
+
+Eight songs were added to fill gaps in genre and mood coverage. The additions brought in hip-hop, classical, r&b, country, metal, reggae, blues, and edm — none of which existed in the starter set. Three new numeric features were also added to every song: instrumentalness, liveness, and mode. No songs were removed.
 
 ---
 
 ## 5. Strengths
 
-Where does your recommender work well
+Where does your recommender work well:
 
-You can think about:
-- Situations where the top results "felt right"
-- Particular user profiles it served well
-- Simplicity or transparency benefits
+The system works best when the user gives clear and matching preferences. In those cases, it creates strong rankings and the best song is easy to identify. It also does a good job separating opposite styles, such as calm vs intense or acoustic vs electronic music. Another strength is that it clearly explains why each song was recommended by showing what features matched. When one song matches almost everything, the results are easy to trust. It is also a useful learning tool because the weights and scoring process are easy to see and understand.
 
----
 
 ## 6. Limitations and Bias
 
-Where does your recommender struggle
-
-Some prompts:
-- Does it ignore some genres or moods
-- Does it treat all users as if they have the same taste shape
-- Is it biased toward high energy or one genre by default
-- How could this be unfair if used in a real product
-
----
+The system has some important weaknesses. It gives very little importance to genre, so users may not get the styles they clearly ask for, such as EDM. It uses the same fixed weights for every user, even though different people care about different features like genre, tempo, or energy. Some genres and moods are harder to recommend because their song values or labels are less common in the dataset. This means some users may get worse recommendations without knowing why. In a real product, this could create unfair and less accurate results for certain listeners.
 
 ## 7. Evaluation
 
 How did you check your system
 
-Examples:
-- You tried multiple user profiles and wrote down whether the results matched your expectations
-- You compared your simulation to what a real app like Spotify or YouTube tends to recommend
-- You wrote tests for your scoring logic
 
-You do not need a numeric metric, but if you used one, explain what it measures.
+I tested 7 profiles in total. 
+Comparing it to Spotify or other platforms, I noticed that it is better to use multiple ways to "detect" preferences. Specially by behaviour, which is something that my program can not do.
+
+
+
+I used score values (0–1) — the weighted similarity score itself was the only number we tracked. We used it to compare songs against each other and to spot when profiles produced inflated or collapsed scores.
+Score gaps — we looked at how far apart the top results were (e.g., 0.99 vs 0.91 vs 0.70) to judge whether the ranking felt meaningful or arbitrary.
+Manual intuition checks — we asked "does this result make sense?" after each run. If the top song matched on mood + energy and the explanation backed it up, we called it correct.
 
 ---
 
@@ -193,11 +197,8 @@ You do not need a numeric metric, but if you used one, explain what it measures.
 
 If you had more time, how would you improve this recommender
 
-Examples:
+I definitely would have liked to include a dislike option, or a way the user can specify about any genres or  artists they'd like to avoid completly. Also a way that a user can provide feedback for a recommendation. If the user disagrees with a recommendation, it will avoid using the same evaluations.
 
-- Add support for multiple users and "group vibe" recommendations
-- Balance diversity of songs instead of always picking the closest match
-- Use more features, like tempo ranges or lyric themes
 
 ---
 
@@ -205,7 +206,7 @@ Examples:
 
 A few sentences about what you learned:
 
-- What surprised you about how your system behaved
-- How did building this change how you think about real music recommenders
-- Where do you think human judgment still matters, even if the model seems "smart"
+My biggest learning moment was understanding how song features like tempo, energy, and mood can be turned into numbers and used to recommend music. It was interesting to see how data can guide recommendations. It was amazing that recommendations could be made just by comparing tempo, energy, and other song features.
+
+
 
