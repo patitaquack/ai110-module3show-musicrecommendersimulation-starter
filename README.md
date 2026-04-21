@@ -85,7 +85,27 @@ You can add more tests in `tests/test_recommender.py`.
 
 ---
 
+## Sample Output
+
+The following screenshots show the recommender running in the terminal across three different user profiles.
+
+**Profile 1 — Default (indie pop / happy / energy 0.75)**
+
+![Profile 1 output](screenshots/output-profile1.png)
+
+**Profile 2 — Top recommendations detail view**
+
+![Profile 2 output](screenshots/output-profile2.png)
+
+**Profile 3 — Full ranked output**
+
+![Profile 3 output](screenshots/output-profile3.png)
+
+---
+
 ## Experiments You Tried
+
+
 
 Use this section to document the experiments you ran. For example:
 
